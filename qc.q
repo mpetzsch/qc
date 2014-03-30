@@ -1,29 +1,29 @@
 / qc
 
-f:`:test.q
-l:read0 f;
+file:`:test.q
+codeLines:read0 file;
 
-c:([f:`$(); l:`int$()] r:`boolean$());
-cf:([f:`$(); l:`int$()] r:`boolean$());
+linesHit:([file:`$(); lineNum:`int$()] r:`boolean$());
+functionsEntered:([file:`$(); lineNum:`int$()] r:`boolean$());
 
-bl:{ `c upsert (x;y;1b) };
-bf:{ `cf upsert (x;y;1b) };
+logLine:{ `linesHit upsert (x;y;1b) };
+logFunction:{ `functionsEntered upsert (x;y;1b) };
 
-blt:{[f;n] "bl[`",string[f],";",string[n],"];"};
-bft:{[f;l;n] ssr[l;"{";"{bf[`",string[f],";",string[n],"];"] };
+logLineInject:{[file;lineNum] "logLine[`",string[file],";",string[lineNum],"];"};
+logFunctionInject:{[file;line;lineNum] ssr[line;"{";"{logFunction[`",string[file],";",string[lineNum],"];"] };
 
-nf:` sv {[f;l;n] 
+nf:` sv {[file;line;lineNum] 
 	/ get line begins
-	blt[f;n],
+	logLineInject[file;lineNum],
 		/ get functions
-		bft[f;l;n]
-	} .' (f),/:(enlist each l),'(1 + til count l);
+		logFunctionInject[file;line;lineNum]
+	} .' (file),/:(enlist each codeLines),'(1 + til count codeLines);
 
 value nf;
 
 hout:"<html><body><font face='courier'><table>";
 
-hout,: raze { "<tr><td",$[z in x;" bgcolor='#00FF7F'";""],"><pre>",y,"</pre></td></tr>" }[key[c]`l;] .' (enlist each l),'1+til count l;
+hout,: raze { "<tr><td",$[z in x;" bgcolor='#00FF7F'";""],"><pre>",y,"</pre></td></tr>" }[key[linesHit]`lineNum;] .' (enlist each codeLines),'1+til count codeLines;
 
 hout,:"</table></font></body></html>";
 
